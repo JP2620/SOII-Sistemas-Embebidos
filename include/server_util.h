@@ -1,6 +1,7 @@
 #include <ulfius.h>
 #include <string.h>
 #include <orcania.h> 
+#include <pwd.h>
 
 #define GROUP_ID 1234
 #define GROUP_NAME "SERVER_USERS"
