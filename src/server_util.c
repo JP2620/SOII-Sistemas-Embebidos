@@ -22,6 +22,13 @@ int callback_create_user(const struct _u_request *request,
                                                            "username"));
   const char *password = json_string_value(json_object_get(body_req,
                                                            "password"));
+  if (username == NULL || password == NULL)
+  {
+    json_t * res_fail = json_object();
+    json_object_set(res_fail, "description", json_string("Bad syntax"));
+    ulfius_set_json_body_response(response, MHD_HTTP_BAD_REQUEST, res_fail);
+    return U_CALLBACK_IGNORE;
+  }
 
   /* Crea el comando con los datos de la request y lo corre */
   char cmd[MAX_CMD_LEN];
