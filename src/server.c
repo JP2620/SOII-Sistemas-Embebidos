@@ -23,6 +23,8 @@ int main()
   // Endpoints
   ulfius_add_endpoint_by_val(&instance, "POST", PREFIX, "/users", 0,
                              &callback_create_user, NULL);
+  ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/users", 0,
+                             &callback_get_users, NULL);
 
   // Inicializar el framework
   retval = ulfius_start_framework(&instance); // Abre conexion http
