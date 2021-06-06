@@ -5,3 +5,5 @@ for uid in $users
 do
   sudo deluser $uid
 done
+
+sudo rm /var/log/tp3/*
