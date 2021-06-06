@@ -127,6 +127,69 @@ int callback_get_users(__attribute__((unused)) const struct _u_request *req,
 }
 
 
+int callback_ls_goes(__attribute__((unused)) const struct _u_request *request,
+                         struct _u_response *response, 
+                         __attribute__((unused)) void *user_data)
+{
+  char path_file[PATH_MAX];
+  json_t *body_res = json_object();
+  json_t *file_array = json_array();
+  int counter = 1;
+  DIR *d;
+  struct dirent *dir;
+  d = opendir(PATH_GOES); // Abre directorio con archivos de GOES
+  if (d)
+  {
+    while ((dir = readdir(d)) != NULL) // Lee archivo a archivo
+    {
+      // Si es un archivo regular (no directorio ni simlink ni nada raro)
+      if (dir->d_type == DT_REG) 
+      {
+
+        memset(path_file, 0, sizeof(path_file));
+        /* Arma el path para hacer el path del archivo y
+         usarlo para conseguir el filesize */
+        strncpy(path_file, PATH_GOES, strlen(PATH_GOES) + 1);
+        strncat(path_file, dir->d_name, NAME_MAX);
+	      struct stat st;
+	      if (stat(path_file, &st) == -1)
+	      {
+	      	perror("stat");
+	      	return U_CALLBACK_ERROR;
+	      }
+
+        char unidades[5][5] = {"B", "kB", "MB", "GB", "TB"};
+        int pos = 0;
+        long double resultado;
+        long double div = 1024;
+        while ( (resultado = st.st_size / div) > 1)
+        {
+          pos++;
+          div *= div;
+        }
+        printf("%3.1Lf %s\n", resultado * 1000, unidades[pos]);
+        printf("file_id: %d, path: %s, size: %ld\n",
+              counter, path_file, st.st_size);
+        char filesize[20];
+        sprintf(filesize, "%3.1Lf %s", resultado * 1000, unidades[pos]);
+
+        /* Arma JSON para el body de response */
+        json_t * file = json_object();
+        json_object_set(file, "file_id", json_integer(counter));
+        json_object_set(file, "link", json_string(path_file));
+        json_object_set(file, "filesize", json_string(filesize));
+        json_array_append(file_array, file);
+        counter++;
+      }
+    }
+    closedir(d);
+  }
+  json_object_set(body_res, "files", file_array);
+  if (ulfius_set_json_body_response(response, MHD_HTTP_OK, body_res) != U_OK)
+    return U_CALLBACK_ERROR;
+  return U_CALLBACK_CONTINUE;
+}
+
 /**
  * @brief Función para loggear eventos
  * @param log stream a donde loggear
