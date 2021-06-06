@@ -5,11 +5,11 @@ BIN = ./bin
 
 all: server
 
-server: server.o
-	$(CC) $(CFLAGS) $< -o $(BIN)/$@ -lulfius
+server: server.o server_util.o
+	$(CC) $(CFLAGS) $^ -o $(BIN)/$@ -lulfius -lorcania -ljansson
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@ -lulfius
+	$(CC) $(CFLAGS) -c $< -o $@ -lulfius -lorcania -ljansson
 
 
 clean:
