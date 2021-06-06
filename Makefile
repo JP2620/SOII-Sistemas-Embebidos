@@ -3,9 +3,9 @@ CC = gcc
 CFLAGS= -Wall -pedantic -Wextra -Wconversion -std=gnu11 
 BIN = ./bin
 
-all: server
+all: server_users
 
-server: server.o server_util.o
+server_%: server_%.o server_util.o
 	$(CC) $(CFLAGS) $^ -o $(BIN)/$@ -lulfius -lorcania -ljansson
 
 %.o: %.c
@@ -14,7 +14,7 @@ server: server.o server_util.o
 
 clean:
 	rm *.o
-	rm $(BIN)/server
+	rm $(BIN)/server*
 
 
 
