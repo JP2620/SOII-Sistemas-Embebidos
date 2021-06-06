@@ -187,6 +187,11 @@ int callback_ls_goes(__attribute__((unused)) const struct _u_request *request,
   json_object_set(body_res, "files", file_array);
   if (ulfius_set_json_body_response(response, MHD_HTTP_OK, body_res) != U_OK)
     return U_CALLBACK_ERROR;
+
+  FILE * f_log = fopen(PATH_LOG, "a");
+  log_event(f_log, "| [%s] | Archivos en el servidor: %zu\n", GOES_SERVICE,
+           json_array_size(file_array));
+  fclose(f_log);
   return U_CALLBACK_CONTINUE;
 }
 

@@ -11,6 +11,7 @@
 #define GROUP_ID 1234
 #define GROUP_NAME "SERVER_USERS"
 #define USER_SERVICE "User service"
+#define GOES_SERVICE "Download service"
 #define PATH_LOG "/var/log/tp3/log.txt"
 #define PATH_GOES "/var/www/goes/"
 #define MAX_CMD_LEN 1024 // Fuente: yo

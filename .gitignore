@@ -1,6 +1,7 @@
 bin/server
 *.swp
 .vscode
+TODO
 
 # Prerequisites
 *.d
