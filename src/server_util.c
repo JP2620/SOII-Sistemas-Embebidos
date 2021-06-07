@@ -217,6 +217,7 @@ int callback_find_goes(const struct _u_request *request,
                        __attribute__((unused)) void *user_data)
 {
   json_error_t error;
+  int retval;
   json_t *body_res = json_object();
   json_t *body_req = ulfius_get_json_body_request(request, &error);
   const char *product = json_string_value(json_object_get(body_req, "product"));
@@ -294,6 +295,75 @@ int callback_find_goes(const struct _u_request *request,
     }
   }
 
+  /* Si no se encuentra el archivo, se notifica al usuario 
+  y en segundo plano se descarga el archivo */
+
+  pid_t pid = fork();
+  if (pid != 0) // El padre notifica
+  {
+    json_object_set(body_res, "description", json_string("File not found,"
+                              " try again later"));
+    ulfius_set_json_body_response(response, MHD_HTTP_NOT_FOUND, body_res);
+    return U_CALLBACK_IGNORE;
+  }
+  else if (pid == 0) // El hijo descarga
+  {
+    /* Arma el comando para listar 
+    product es por ejemplo OR_ABI-L2-MCMIPF y la carpeta en aws
+    es ABI-L2-MCMIPF
+    */
+    char aws_ls_cmd[MAX_CMD_LEN];
+    char product_to_tok[50];
+    char product_folder[50];
+    char filename[255];
+    strncpy(product_to_tok, product, sizeof(product_to_tok));
+    strtok(product_to_tok, "_"); // Chau OR_
+    strcpy(product_folder, strtok(NULL, "_"));
+
+    sprintf(aws_ls_cmd, "aws s3 --no-sign-request ls "
+      "noaa-goes16/%s/%s/%s/%s/ 2>/dev/null", product_folder, year, day, hour);
+    FILE * ls_out = popen(aws_ls_cmd, "r");
+    if (ls_out == NULL)
+    {
+      fprintf(stderr, "Memoria insuficiente, popen\n");
+      exit(EXIT_FAILURE);
+    }
+    /* extraemos el nombre del primer archivo de la lista */
+    retval = fscanf(ls_out, "%*s %*s %*s %s\n", filename);
+    if (retval < 0)
+    {
+      perror("fscanf ");
+      pclose(ls_out);
+      goto fail;
+    }
+    retval = pclose(ls_out); 
+    if (retval == -1)
+    {
+      perror("pclose: ");
+      return U_CALLBACK_CONTINUE;
+    }
+
+
+    /* Descarga en paralelo el primer archivo de la lista*/
+    char aws_cp_cmd[MAX_CMD_LEN];
+    sprintf(aws_cp_cmd, "aws s3 --no-sign-request cp "
+            "s3://noaa-goes16/%s/%s/%s/%s/%s %s",
+            product_folder, year, day, hour, filename, PATH_GOES);
+    system(aws_cp_cmd);
+    FILE * f_log = fopen(PATH_LOG, "a");
+    log_event(f_log, "| [%s] | Archivo descargado: %s\n",
+              GOES_SERVICE, filename);
+    //json_object_set(body_res, "description", json_string("File ready"));
+    //ulfius_set_json_body_response(response, MHD_HTTP_OK, body_res);
+    fclose(f_log);
+    exit(EXIT_SUCCESS);
+    //return U_CALLBACK_COMPLETE;
+  }
+
+
+
+
+
   if (false) // Solo se entra aca con goto
   {
   fail:;
@@ -303,7 +373,7 @@ int callback_find_goes(const struct _u_request *request,
     ulfius_set_json_body_response(response, MHD_HTTP_BAD_REQUEST, res_fail);
     return U_CALLBACK_IGNORE;
   }
-  return U_CALLBACK_CONTINUE;
+  return U_CALLBACK_ERROR;
 }
 
 /**
