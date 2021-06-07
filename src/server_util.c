@@ -126,7 +126,19 @@ int callback_get_users(__attribute__((unused)) const struct _u_request *req,
   return U_CALLBACK_CONTINUE;
 }
 
-
+/**
+ * @brief Callback que lista archivos
+ * @return {
+ * "files" : [
+ * {
+ *    "file_id" : 1,
+ *    "link"    : blablabla,
+ *    "size"    : 321 kB 
+ * },
+ * ...
+ * ]
+ * }
+ * */
 int callback_ls_goes(__attribute__((unused)) const struct _u_request *request,
                          struct _u_response *response, 
                          __attribute__((unused)) void *user_data)
@@ -192,6 +204,67 @@ int callback_ls_goes(__attribute__((unused)) const struct _u_request *request,
   log_event(f_log, "| [%s] | Archivos en el servidor: %zu\n", GOES_SERVICE,
            json_array_size(file_array));
   fclose(f_log);
+  return U_CALLBACK_CONTINUE;
+}
+
+/**
+ * Acepta
+ * {
+ *  "product": {{PRODUCT}},
+ *  "datetime": YYYY/DDD/HH 
+ * }
+ * Con DD siendo el día juliano
+ * */
+int callback_find_goes(const struct _u_request *request,
+                         struct _u_response *response, 
+                         __attribute__((unused)) void *user_data)
+{
+  json_error_t error;
+  json_t * body_req = ulfius_get_json_body_request(request, &error);
+  const char * product = json_string_value(json_object_get(body_req, "product"));
+  const char * datetime = json_string_value(json_object_get(body_req, "datetime"));
+  if (product == NULL || datetime == NULL) // bad request
+    goto fail;
+  
+  char datetime_to_tok[30];
+  strncpy(datetime_to_tok, datetime, sizeof(datetime_to_tok));
+  char* year = strtok(datetime_to_tok, "/");
+  char* day = strtok(NULL, "/");
+  char* hour = strtok(NULL, "/");
+
+  if (year == NULL || day == NULL || hour == NULL)
+    goto fail;
+
+  /* datetime abreviado de comienzo de la medición */
+  char goesdatetime[90];
+  snprintf(goesdatetime, 90, "s%s%s%s", year, day, hour);
+
+  DIR *d;
+  struct dirent *dir;
+  d = opendir(PATH_GOES); // Abre directorio con archivos de GOES
+  if (d)
+  {
+    while ((dir = readdir(d)) != NULL) // Lee archivo a archivo
+    {
+      /* Si en el nombre del archivo esta el producto y fecha, lo tengo */
+      if (strstr(dir->d_name, product) != NULL 
+      && strstr(dir->d_name, goesdatetime) != NULL)
+      {
+        printf("LO TENGO\n");
+      }
+    }
+  }
+
+
+  if (false) // Solo se entra aca con goto
+  {
+  fail: ;
+    json_t * res_fail = json_object();
+    json_object_set(res_fail, "description", json_string("Bad request, expected"
+     " \"product\": {{PRODUCT}} and \"datetime\": {{DATETIME}}"));
+    ulfius_set_json_body_response(response, MHD_HTTP_BAD_REQUEST, res_fail);
+    return U_CALLBACK_IGNORE;
+  }
   return U_CALLBACK_CONTINUE;
 }
 

@@ -22,6 +22,8 @@ int main()
                             //  &callback_create_user, NULL);
   ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/get_goes", 0,
                              &callback_ls_goes, NULL);
+  ulfius_add_endpoint_by_val(&instance, "POST", PREFIX, "/get_goes", 0,
+                             &callback_find_goes, NULL);
 
   // Inicializar el framework
   retval = ulfius_start_framework(&instance); // Abre conexion http

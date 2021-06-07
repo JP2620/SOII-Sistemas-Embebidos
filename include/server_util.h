@@ -7,6 +7,7 @@
 #include <dirent.h>
 #include <linux/limits.h>
 #include <sys/stat.h>
+#include <stdbool.h>
 
 #define GROUP_ID 1234
 #define GROUP_NAME "SERVER_USERS"
@@ -23,6 +24,8 @@ int callback_create_user(const struct _u_request *request,
 int callback_get_users(const struct _u_request *request,
                          struct _u_response *response, void *user_data);
 int callback_ls_goes(const struct _u_request *request,
+                         struct _u_response *response, void *user_data);
+int callback_find_goes(const struct _u_request *request,
                          struct _u_response *response, void *user_data);
 
 /* UTILIDADES */
