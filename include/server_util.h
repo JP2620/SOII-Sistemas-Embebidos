@@ -1,6 +1,6 @@
 #include <ulfius.h>
 #include <string.h>
-#include <orcania.h> 
+#include <orcania.h>
 #include <pwd.h>
 #include <grp.h>
 #include <limits.h>
@@ -22,13 +22,14 @@
 int callback_create_user(const struct _u_request *request,
                          struct _u_response *response, void *user_data);
 int callback_get_users(const struct _u_request *request,
-                         struct _u_response *response, void *user_data);
+                       struct _u_response *response, void *user_data);
 int callback_ls_goes(const struct _u_request *request,
-                         struct _u_response *response, void *user_data);
+                     struct _u_response *response, void *user_data);
 int callback_find_goes(const struct _u_request *request,
-                         struct _u_response *response, void *user_data);
+                       struct _u_response *response, void *user_data);
 
 /* UTILIDADES */
-int log_event(FILE* log, char* fmt_str, ...);
-int get_datetime(char* buf, size_t max_len);
-
+int log_event(FILE *log, char *fmt_str, ...);
+int get_datetime(char *buf, size_t max_len);
+int bytes_to_human_readable(char *hu_readable,
+                            size_t buf_len, long double bytes);

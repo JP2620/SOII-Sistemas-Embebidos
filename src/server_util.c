@@ -163,29 +163,22 @@ int callback_ls_goes(__attribute__((unused)) const struct _u_request *request,
          usarlo para conseguir el filesize */
         strncpy(path_file, PATH_GOES, strlen(PATH_GOES) + 1);
         strncat(path_file, dir->d_name, NAME_MAX);
-	      struct stat st;
+	      /* Consigue file size */
+        struct stat st; 
 	      if (stat(path_file, &st) == -1)
 	      {
 	      	perror("stat");
 	      	return U_CALLBACK_ERROR;
 	      }
-
-        char unidades[5][5] = {"B", "kB", "MB", "GB", "TB"};
-        int pos = 0;
-        long double resultado;
-        long double div = 1024;
-        while ( (resultado = st.st_size / div) > 1)
-        {
-          pos++;
-          div *= div;
-        }
-        printf("%3.1Lf %s\n", resultado * 1000, unidades[pos]);
-        printf("file_id: %d, path: %s, size: %ld\n",
-              counter, path_file, st.st_size);
         char filesize[20];
-        sprintf(filesize, "%3.1Lf %s", resultado * 1000, unidades[pos]);
+        int retval = bytes_to_human_readable(filesize, 20, st.st_size);
+        if (retval == -1)
+        {
+          perror("bytes_to_human_readable");
+          return U_CALLBACK_ERROR;
+        }
 
-        /* Arma JSON para el body de response */
+
         json_t * file = json_object();
         json_object_set(file, "file_id", json_integer(counter));
         json_object_set(file, "link", json_string(path_file));
@@ -220,6 +213,7 @@ int callback_find_goes(const struct _u_request *request,
                          __attribute__((unused)) void *user_data)
 {
   json_error_t error;
+  json_t * body_res = json_object();
   json_t * body_req = ulfius_get_json_body_request(request, &error);
   const char * product = json_string_value(json_object_get(body_req, "product"));
   const char * datetime = json_string_value(json_object_get(body_req, "datetime"));
@@ -250,7 +244,25 @@ int callback_find_goes(const struct _u_request *request,
       if (strstr(dir->d_name, product) != NULL 
       && strstr(dir->d_name, goesdatetime) != NULL)
       {
-        printf("LO TENGO\n");
+        if (dir->d_type != DT_REG)
+          continue;
+
+        char path_file[PATH_MAX];
+        strcpy(path_file, PATH_GOES);
+        strcat(path_file, dir->d_name);
+        struct stat st; 
+	      if (stat(path_file, &st) == -1)
+	      {
+	      	perror("stat");
+	      	return U_CALLBACK_ERROR;
+	      }
+        char filesize[20];
+        bytes_to_human_readable(filesize, 20, st.st_size);
+
+        json_object_set(body_res, "link", json_string("www.placeholder.com"));
+        json_object_set(body_res, "filesize", json_string(filesize));
+        ulfius_set_json_body_response(response, MHD_HTTP_OK, body_res);
+        return U_CALLBACK_CONTINUE;
       }
     }
   }
@@ -307,4 +319,22 @@ int get_datetime(char* buf, size_t max_len)
 		return -1;
 	strftime(buf, max_len, "%D %H:%M:%S ", localtime(&now));
 	return 0;
+}
+
+int bytes_to_human_readable(char * hu_readable, size_t buf_len, long double bytes)
+{
+  char unidades[5][5] = {"B", "kB", "MB", "GB", "TB"};
+  int pos = 0;
+  long double resultado;
+  long double div = 1024;
+  while ( (resultado = bytes / div) > 1)
+  {
+    pos++;
+    div *= 1024;
+  }
+  resultado *= 1000;
+  if (snprintf(hu_readable, buf_len, 
+    "%3.1Lf %s", resultado, unidades[pos]) < 0)
+    return -1;
+  return 0;
 }
