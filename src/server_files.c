@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <ulfius.h>
-#include "../include/u_example.h"
 #include "../include/server_util.h"
 #define PORT 8537
 #define PREFIX "/api/server"
@@ -18,8 +17,7 @@ int main()
   }
   instance.max_post_body_size = 1024;
   // Endpoints
-  // ulfius_add_endpoint_by_val(&instance, "POST", PREFIX, "/get_goes", 0,
-                            //  &callback_create_user, NULL);
+  
   ulfius_add_endpoint_by_val(&instance, "GET", PREFIX, "/get_goes", 0,
                              &callback_ls_goes, NULL);
   ulfius_add_endpoint_by_val(&instance, "POST", PREFIX, "/get_goes", 0,

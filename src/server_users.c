@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <ulfius.h>
-#include "../include/u_example.h"
 #include "../include/server_util.h"
 #define PORT 8537
 #define PREFIX "/api"
