@@ -1,0 +1,19 @@
+# Default server configuration
+#
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+
+        root /var/www/goes;
+
+        index index.html index.htm index.nginx-debian.html;
+
+        location /api/users {
+                proxy_pass http://localhost:8537/api/users/;
+        }
+
+        location /api/server/goes {
+                proxy_pass http://localhost:8538/api/server/goes/;
+
+        }
+}
