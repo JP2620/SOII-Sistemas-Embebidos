@@ -15,6 +15,7 @@
 #define GOES_SERVICE "Download service"
 #define PATH_LOG "/var/log/tp3/log.txt"
 #define PATH_GOES "/var/www/goes/"
+#define DOMAIN_NAME "www.tp3.com"
 #define MAX_CMD_LEN 1024 // Fuente: yo
 #define MAX_UNAME_LEN 32 // según useradd
 

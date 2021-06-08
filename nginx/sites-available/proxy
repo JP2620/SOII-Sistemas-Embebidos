@@ -1,0 +1,23 @@
+# Default server configuration
+#
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+
+        # Mapeo root a /var/www/goes
+        root /var/www/goes;
+        # user1 1234
+        auth_basic "Area restringida";
+        auth_basic_user_file /etc/apache2/.htpasswd;
+
+        index index.html index.htm index.nginx-debian.html;
+
+        location /api/users {
+                proxy_pass http://localhost:8537/api/users/;
+        }
+
+        location /api/server/goes {
+                proxy_pass http://localhost:8538/api/server/goes/;
+
+        }
+}

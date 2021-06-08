@@ -178,9 +178,12 @@ int callback_ls_goes(__attribute__((unused)) const struct _u_request *request,
           return U_CALLBACK_ERROR;
         }
 
+        /* Arma respuesta */
         json_t *file = json_object();
         json_object_set(file, "file_id", json_integer(counter));
-        json_object_set(file, "link", json_string(path_file));
+        char link_descarga[500];
+        sprintf(link_descarga, "%s/%s", DOMAIN_NAME, dir->d_name);
+        json_object_set(file, "link", json_string(link_descarga));
         json_object_set(file, "filesize", json_string(filesize));
         json_array_append(file_array, file);
         counter++;
@@ -275,8 +278,10 @@ int callback_find_goes(const struct _u_request *request,
         fprintf(stderr, "bytes_to_human_readable");
         return U_CALLBACK_ERROR;
       }
-
-      json_object_set(body_res, "link", json_string("www.placeholder.com"));
+      
+      char link_descarga[1000];
+      sprintf(link_descarga, "%s/%s", DOMAIN_NAME, dir->d_name);
+      json_object_set(body_res, "link", json_string(link_descarga));
       json_object_set(body_res, "filesize", json_string(filesize));
       if (ulfius_set_json_body_response(response, MHD_HTTP_OK, body_res) != U_OK)
         return U_CALLBACK_ERROR;
