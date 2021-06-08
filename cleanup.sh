@@ -6,4 +6,8 @@ do
   sudo deluser $uid
 done
 
+sudo deluser www-goes
+sudo deluser www-users
+sudo systemctl stop users
+sudo systemctl stop goes
 sudo rm /var/log/tp3/*

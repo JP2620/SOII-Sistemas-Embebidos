@@ -32,7 +32,7 @@ int callback_create_user(const struct _u_request *request,
 
   /* Crea el comando con los datos de la request y lo corre */
   char cmd[MAX_CMD_LEN];
-  retval = snprintf(cmd, MAX_CMD_LEN, "sudo useradd --gid %s -p %s %s\n",
+  retval = snprintf(cmd, MAX_CMD_LEN, "useradd --gid %s -p $(openssl passwd -6 %s) %s -m\n",
                     GROUP_NAME, password, username);
   if (retval < 0)
     return U_CALLBACK_ERROR;
@@ -93,13 +93,14 @@ int callback_get_users(__attribute__((unused)) const struct _u_request *req,
 {
   json_t *body_res = json_object();
   json_t *user_array = json_array();
-
   /* Forma array de usuarios */
   char line[1024];
   FILE *f_users = fopen("/etc/passwd", "r");
   if (f_users == NULL)
+  {
+    perror("fopen");
     return U_CALLBACK_ERROR;
-
+  }
   while (fgets(line, sizeof(line), f_users) != NULL)
   {
     char username[MAX_UNAME_LEN + 1];
@@ -112,14 +113,18 @@ int callback_get_users(__attribute__((unused)) const struct _u_request *req,
     json_object_set(info_user, "username", json_string(username));
     json_array_append(user_array, info_user);
   }
-
   json_object_set(body_res, "data", user_array);
   fclose(f_users);
   if (ulfius_set_json_body_response(res, MHD_HTTP_OK, body_res) != U_OK)
     return U_CALLBACK_ERROR;
-
   /* Loggeo evento */
   FILE *f_log = fopen(PATH_LOG, "a");
+  if (f_log == NULL)
+  {
+    perror("f_log");
+    fclose(f_log);
+    return U_CALLBACK_ERROR;
+  }
   log_event(f_log, "| [%s] | cantidad de usuarios del SO: %zu\n", USER_SERVICE,
             json_array_size(user_array));
   fclose(f_log);

@@ -5,6 +5,9 @@ After=network.target
 [Service]
 Type=simple
 ExecStart=/usr/bin/server_files
+Restart=on-failure
+RestartSec=5
+User=www-goes
 
 [Install]
 WantedBy=multi-user.target
