@@ -1,0 +1,10 @@
+[Unit]
+Description=Servicio de creación de usuarios
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/server_users
+
+[Install]
+WantedBy=multi-user.target

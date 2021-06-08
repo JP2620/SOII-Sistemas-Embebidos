@@ -1,0 +1,10 @@
+[Unit]
+Description=Servicio de descargas
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/server_files
+
+[Install]
+WantedBy=multi-user.target

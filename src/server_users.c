@@ -26,7 +26,7 @@ int main()
   retval = ulfius_start_framework(&instance); // Abre conexion http
   if (retval == U_OK)
   {
-    getchar();
+    pause();
   }
   else
   {

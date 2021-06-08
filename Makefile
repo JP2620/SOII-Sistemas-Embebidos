@@ -1,7 +1,7 @@
 VPATH = ./src
 CC = gcc
 CFLAGS= -Wall -pedantic -Wextra -Wconversion -std=gnu11 
-BIN = ./bin
+BIN = /usr/bin
 
 all: server_users server_files
 
