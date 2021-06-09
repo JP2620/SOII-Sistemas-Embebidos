@@ -1,0 +1,2 @@
+# Copiar en /etc/sudoers.d/
+www-users ALL = NOPASSWD: /usr/sbin/useradd

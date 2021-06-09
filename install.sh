@@ -18,11 +18,14 @@ sudo groupadd -g 1112 www-users
 sudo useradd --gid www-goes --password $(openssl passwd -6 1234) www-users
 sudo useradd --gid www-goes --password $(openssl passwd -6 1234) www-goes
 sudo chown -R www-goes:www-goes /var/www/goes
+sudo cp ./sudoers/* /etc/sudoers.d/
 
 sudo groupadd -g 1113 www-tp3
 sudo usermod -a -G www-tp3 www-users
 sudo usermod -a -G www-tp3 www-goes
-sudo chgrp www-tp3 /var/log/tp3/
+sudo touch /var/log/tp3/log.txt
+sudo chgrp -R www-tp3 /var/log/tp3/
+sudo chmod 777 -R /var/log/
 
 # Crea root del servicio de descarga
 

@@ -32,7 +32,7 @@ int callback_create_user(const struct _u_request *request,
 
   /* Crea el comando con los datos de la request y lo corre */
   char cmd[MAX_CMD_LEN];
-  retval = snprintf(cmd, MAX_CMD_LEN, "useradd --gid %s -p $(openssl passwd -6 %s) %s -m\n",
+  retval = snprintf(cmd, MAX_CMD_LEN, "sudo useradd --gid %s -p $(openssl passwd -6 %s) %s -m\n",
                     GROUP_NAME, password, username);
   if (retval < 0)
     return U_CALLBACK_ERROR;
@@ -68,6 +68,12 @@ int callback_create_user(const struct _u_request *request,
 
   /* Loggeo evento */
   FILE *f_log = fopen(PATH_LOG, "a");
+  if (f_log == NULL)
+  {
+    perror("f_log");
+    fclose(f_log);
+    return U_CALLBACK_ERROR;
+  }
   log_event(f_log, "| [%s] | Usuario %d\n", USER_SERVICE, user_id);
   fclose(f_log);
 
